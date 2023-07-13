@@ -1,33 +1,54 @@
 version: '3'
-
 services:
-  app:
+  # Laravel Service
+  laravel:
     build:
-      context: .
+      context: ./laravel
       dockerfile: Dockerfile
-    restart: unless-stopped
     volumes:
-      - .:/var/www/html
-
-  db:
-    image: mysql:8.0
-    restart: unless-stopped
+      - ./laravel:/var/www/html
+    ports:
+      - 8000:8000
+    depends_on:
+      - mysql
     environment:
-      - MYSQL_DATABASE=example-app-db
-      - MYSQL_ROOT_PASSWORD=example-app-pwd
-    volumes:
-      - dbdata:/var/lib/mysql
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_DATABASE=laravel
+      - DB_USERNAME=root
+      - DB_PASSWORD=root
 
+  # MySQL Service
+  mysql:
+    image: mariadb:10.5.19
+    volumes:
+      - ./mysql:/var/lib/mysql
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_DATABASE=laravel
+      - MYSQL_ROOT_PASSWORD=root
+      
+  # NextJS Service
+  nextjs:
+    build:
+      context: ./nextjs
+      dockerfile: Dockerfile
+    volumes:
+      - ./nextjs:/var/www/html
+      # Add any additional volumes if needed
+    ports:
+      - 3000:3000
+    # environment:
+    #   - NODE_ENV=production
+
+  # Nginx Service
   nginx:
-    image: nginx:latest
-    restart: unless-stopped
+    image: nginx
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     ports:
       - 80:80
-    volumes:
-      - ./docker-compose/nginx/default.conf:/etc/nginx/conf.d/default.conf
-      - .:/var/www/html
     depends_on:
-      - app
-
-volumes:
-  dbdata:
+      - laravel
+      - nextjs
