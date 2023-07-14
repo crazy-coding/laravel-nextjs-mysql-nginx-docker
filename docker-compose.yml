@@ -12,7 +12,7 @@ services:
     depends_on:
       - mysql
     environment:
-      - DB_HOST=mysql
+      - DB_HOST=127.0.0.1
       - DB_PORT=3306
       - DB_DATABASE=laravel
       - DB_USERNAME=root
@@ -46,7 +46,7 @@ services:
   nginx:
     image: nginx
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
     ports:
       - 80:80
     depends_on:
